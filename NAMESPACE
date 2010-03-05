@@ -1,0 +1,4 @@
+
+export(srvrinit,srvrloop,srvr,init,newdsm,"[.dsmv","[<-.dsmv","[.dsmm",
+   "[<-.dsmm","[<-.dsmm",fa,barr,lock,unlock,wait,signal,newf,rpc,
+   closecon,dsmexit)

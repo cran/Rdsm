@@ -1,0 +1,9 @@
+
+See examples/README for quick start.
+
+Type
+
+   help(package=Rdsm)
+
+for details.  (Rdsm must be installed first, of course.)
+
