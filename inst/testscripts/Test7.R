@@ -2,10 +2,7 @@
 
 test <- function() {
    me <- myinfo$myid
-   if(me == 1) {
-      newdsm("y","dsml",val=list(x=c(5,12,13),y="abc"))
-   } else
-      newdsm("y","dsml",size=2)
+   cnewdsm("y","dsml",NULL,list(x=c(5,12,13),y="abc"))
    barr()
    print("should print 5 12 13, abc")
    print(y[])
@@ -22,5 +19,4 @@ test <- function() {
    print("should print 88")
    print(y[2])
    barr()
-   dsmexit()
 }

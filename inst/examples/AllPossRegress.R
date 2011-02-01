@@ -2,6 +2,11 @@
 # against all possible subsets of the Xi predictor variables; returns
 # the one with the largest adjusted R2 value
 
+# run with any number of clients
+# output from test(100,6) should be
+# max adj. R2 =  0.8669005 
+# best predictor set =  1 2 3 5 6 
+
 # author:  N. Matloff
 
 # arguments:
@@ -20,14 +25,12 @@ allpossregress <- function(x,y,maxar2,maxar2idx) {
    # generate list of subsets
    allcombs <- genallcombs(p)
    ncombs <- length(allcombs)
-   # determine which combs this process will handle
+   # determine which combs this thread will handle
    myid <- myinfo$myid
    nclnt <- myinfo$nclnt
    batchsize <- floor(ncombs/nclnt)
    bgn <- (myid-1) * batchsize + 1
    fin <- if (myid == nclnt) ncombs else myid*batchsize
-   mymax <- NA  # max found among all my batches
-   mymaxidx <- NA
    # find the adjusted R-squared values for predictor set ps
    do1predset <- function(ps) {
       slm <- summary(lm(y ~ x[,ps]))
@@ -78,13 +81,8 @@ test <- function(n,p) {
    set.seed(9999)
    x <- matrix(rnorm(n*p),ncol=p)
    y <- x%*%c(1,1,1,rep(0.1,p-3)) + rnorm(n)
-   if(myinfo$myid == 1) {
-      newdsm("cm","dsmv","double",val=-1)
-      newdsm("cmidx","dsmv","integer",val=rep(0,p))
-   } else {
-      newdsm("cm","dsmv","double",size=1)
-      newdsm("cmidx","dsmv","integer",size=p)
-   }
+   cnewdsm("cm","dsmv","double",-1)
+   cnewdsm("cmidx","dsmv","integer",rep(0,p))
    barr()
    print(system.time(allpossregress(x,y,cm,cmidx)))
    barr()
@@ -94,10 +92,5 @@ test <- function(n,p) {
       idx <- idx[idx > 0]
       cat("best predictor set = ",idx,"\n")
    }
-   dsmexit()
 }
-
-# output from test(100,6) should be
-# max adj. R2 =  0.8669005 
-# best predictor set =  1 2 3 5 6 
 

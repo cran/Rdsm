@@ -13,8 +13,9 @@ barr()
 None.
 }
 
-\details{Synchronization function.  Call will not return until all
-clients have made the call.  }
+\details{Call will block at the caller until all clients have made the call.  
+Use to synchronize multiple threads at the same line of code.
+}
 
 \seealso{
     \code{\link{lock}},

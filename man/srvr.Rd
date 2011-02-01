@@ -17,22 +17,21 @@ srvr(port=2000,ncon=2)
   \item{ncon}{Number of connections, i.e. number of clients.}
 }
 
-\details{The function \code{srvrinit} accepts client requests for
-connection with the server, and returns to the the client its ID and the
-total number of clients.  Then \code{srvrloop} is called to run the
+\details{The function \code{srvrinit()} accepts client requests for
+connection with the server, and returns to each client its ID and the
+total number of clients.  Then \code{srvrloop()} is called to run the
 server.
 
-Then, at each client, \code{init} is called, then the application function.
+Then, at each client, \code{init()} must be called. 
 
-One may use \code{srvr} in lieu of the pair \code{srvrinit} and
-\code{srvrloop}.
+One normally uses \code{srvr()} in lieu of the pair \code{srvrinit()} and
+\code{srvrloop()}.
 
 You may have several application functions to run, or may want to run
 the same one multiple times.  This is fine as long as you don't rerun
-\code{srvrinit()}; you must rerun \code{srvrloop}, but do not rerun
-\code{init} at the clinets.
-Application-program \pkg{Rdsm} variables etc. will be retained from one
-run to the next.
+\code{srvrinit()}; run \code{srvr()} just once on the server, and run
+\code{init()} just once at the clinets.  Application-program \pkg{Rdsm}
+variables etc. will be retained from one run to the next.
 
 }
 

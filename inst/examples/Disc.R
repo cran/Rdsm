@@ -1,8 +1,14 @@
-# bigmemory code to do discrete time series prediction; data vector 
-# consists of 0s and 1s; prediction at time i is whatever value, 0 or 1,
-# is in the majority of the previous window of observations
+# code to do discrete time series prediction; data vector consists of 0s
+# and 1s; prediction at time i is whatever value, 0 or 1, is in the
+# majority of the previous window of observations; the method is tried
+# on a given known data set, for various window widths, to determine
+# which one works best
 
-# predmpi()
+# run with 2 or 3 clients
+# the output of test(1000,6) should be
+# 0.4794795 0.5000000 0.5055165 0.5090361 0.4994975 0.4949698
+
+# pred()
 # arguments:
 #    x:  observations vector
 #    maxk:  window widths in 1:maxk will be tried; assumed to be
@@ -10,7 +16,7 @@
 #    errrates:  an output, length-maxk vector of fractions of 
 #               mispredicted observations 
 # return value: none; global variable errrates is set by this function
-predbig <- function(x,maxk,errrates) {
+pred <- function(x,maxk,errrates) {
    if (maxk %% myinfo$nclnt != 0) 
       stop("maxk must be divisible by the number of clients")
    # determine which k range is to be done by this worker
@@ -44,20 +50,11 @@ pred1k <- function(w,k) {
    return(mean(abs(preds-w[(k+1):n])))
 }
 
-testrdsm <- function(n,maxk) {
+test <- function(n,maxk) {
    set.seed(8888)
-   if (myinfo$myid == 1) {
-      newdsm("x","dsmv","integer",val=sample(0:1,n,replace=T))
-      newdsm("errrates","dsmv","double",val=rep(0,maxk))
-   } else {
-      newdsm("x","dsmv","integer",size=n)
-      newdsm("errrates","dsmv","double",size=maxk)
-   }
-   print(system.time(predbig(x,maxk,errrates)))
+   cnewdsm("x","dsmv","integer",sample(0:1,n,replace=T))
+   cnewdsm("errrates","dsmv","double",rep(0,maxk))
+   print(system.time(pred(x,maxk,errrates)))
    print(errrates[])
-   dsmexit()
 }
-
-# the output of testrdsm(1000,6) should be
-# 0.4794795 0.5000000 0.5055165 0.5090361 0.4994975 0.4949698
 

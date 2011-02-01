@@ -2,7 +2,10 @@
 # clients, nclnt-1 pivot elements will be selected from the vector to be
 # sorted; then each client i forms its pile, consisting of the elements
 # between pivots i-1 and i, then sorts its pile, then returning result
-# to its proper place in the original vector
+# to its proper place in the original vector; not claimed to be
+# efficient
+
+# test() should print out 5 12 13 21 22 23
 
 # author:  N. Matloff
 
@@ -49,35 +52,11 @@ qsrt <- function(x,pilelengths) {
    barr()
 }
 
-# test 1
-testqsrt1 <- function() {
-   if (myinfo$myid == 1) {
-      newdsm("z","dsmv","integer",val=c(12,5,13,23,22,21))
-   } else newdsm("z","dsmv","integer",size=6)
-   if (myinfo$myid == 1) {
-      newdsm("pl","dsmv","integer",val=rep(0,6))
-   } else newdsm("pl","dsmv","integer",size=6)
+# test 
+test <- function() {
+   cnewdsm("z","dsmv","double",c(12,5,13,23,22,21))
+   cnewdsm("pl","dsmv","integer",rep(0,6))
    qsrt(z,pl)
    if (myinfo$myid == 1) print(z[])
-   dsmexit()
 }
-
-# test 2
-testqsrt2 <- function(n) {
-   if (myinfo$myid == 1) {
-      newdsm("z","dsmv","integer",val=sample(1:1000000,n,replace=T))
-   } else newdsm("z","dsmv","integer",size=n)
-   nc <- myinfo$nclnt
-   if (myinfo$myid == 1) {
-      newdsm("pl","dsmv","integer",val=rep(0,nc))
-   } else newdsm("pl","dsmv","integer",size=nc)
-   # vector before sorting
-   if (n < 100 && myinfo$myid == 1) print(z[])
-   qsrt(z,pl)
-   # vector after sorting
-   if (n < 100 && myinfo$myid == 1) print(z[])
-   dsmexit()
-}
-
-# testqsrt1() should print out [1]  5 12 13 21 22 23
 

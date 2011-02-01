@@ -1,21 +1,24 @@
-# test wait/signal
+#test dsml
+
+# simply call test()
 
 test <- function() {
    me <- myinfo$myid
-   message("I am ",me)
+   cnewdsm("y","dsml",NULL,list(x=c(5,12,13),y="abc"))
    barr()
-   if (me == 1) {
-      repeat {
-         readline(prompt="wait a bit, then hit Enter")
-         signal("ws")
-      }
-   } else {
-      repeat {
-         Sys.sleep(5*runif(1))
-         message(me," starts a wait")
-         wait("ws")
-      }
-   }
+   print("should print 5 12 13, abc")
+   print(y[])
+   barr()
+   y[] <- list(x=c(3,4,5),y="de")
+   barr()
+   print("should print 5 12 13, abc")
+   print(y[])
+   barr()
+   y[2] <- 88
+   print("should print 5 12 13, 88")
+   print(y[])
+   barr()
+   print("should print 88")
+   print(y[2])
+   barr()
 }
-
-# run with at least 3 clients; hit ctrl-c to quit

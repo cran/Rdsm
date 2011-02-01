@@ -1,19 +1,4 @@
 
-PLEASE NOTE:  
-
-   Rdsm is intended mainly for applications of these kinds:
-
-      *  parallel computation in which writing to shared memory is 
-         infrequent and small in amount; examples here are Disc.R and
-         KNN.R
-      
-      *  threads-like operations such as parallel I/O or 
-         collaborative work among humans; examples here are WebProbe.R
-         and Auction.R  
-   
-   Most of the other examples in this directory are mainly for
-   illustrative purposes.
-
 running the examples:
 
    Load the Rdsm library.  
@@ -27,7 +12,7 @@ running the examples:
       in each of the other 2 windows, do
          source("yourfilename.R")
          init()  # establishes connection with server
-         yourtestfunction()
+         yourtestfunction()  # run the test function, typically () here
 
 quick start:
 
@@ -42,9 +27,6 @@ files:
       Runs regressions for all possible subsets of the predictor variables,
       finding the subset with maximum adjusted R-squared value.
 
-      There is AllPossRegressSnow.R if you wish to compare to a snow
-      version.
-
    Auction.R:
 
       Auction manager.
@@ -53,15 +35,10 @@ files:
 
       Prediction of discrete time series.
 
-      There is DiscSnow.R if you wish to compare to a snow version.
-
    KNN.R:
    
       Nearest neighbor prediction.  
       
-      There is KNNSeq.R if you wish to compare performance to sequential
-      computation.
-   
    MatMult.R:
    
       Vanilla matrix multiplication.  See "quick start" above.

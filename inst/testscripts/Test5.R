@@ -1,28 +1,27 @@
-# test Remote Procedure Call
+# test wait/signal/signal1
 
-# reverse the vector with name xname in glbls, and add c to each element
-rv <- function(xname,c) {
-   x <- glbls[[xname]]$val 
-   n <- length(x)
-   glbls[[xname]]$val <<- x[n:1] + c
-}
+# run with at least 3 clients; hit ctrl-c to quit; in the "all" case,
+# each time hit Enter in client 1, the other clients should each
+# complete one wait; in the "one" case, only one client should react, in
+# rotation, so that with for instance 3 clients, clients 2 and 3 will
+# alternate
 
-test4 <- function(c) {
+# argument sigtype, "all" or "one", determines whether signal() or
+# signal1() is called
+test <- function(sigtype) {
    me <- myinfo$myid
-   if(me == 1) {
-      newdsm("y","dsmv","integer",val=1:4)
-   } else {
-      newdsm("y","dsmv","integer",size=4)
-   }
-   if(me == 1) {
-      newf("rv",rv)
-      rpc("rv",list("y",c))
-   }
+   message("I am ",me)
    barr()
-   message("from ",me,": y = ",paste(y[],collapse=" "))
-   dsmexit()
+   if (me == 1) {
+      repeat {
+         readline(prompt="wait at least 1 sec, then hit Enter")
+         if (sigtype == "all") signal("ws") else signal1("ws")
+      }
+   } else {
+      repeat {
+         Sys.sleep(runif(1))
+         message(me," starts a wait")
+         wait("ws")
+      }
+   }
 }
-
-# run with any number of clients
-
-# should get output of 7 6 5 4

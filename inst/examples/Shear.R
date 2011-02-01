@@ -10,13 +10,27 @@
 # Wilkinson and Allen; this algorithm is designed for processor arrays,
 # but its simplicity makes it a good example for Rdsm
 
+# run with up to 6 clients (changing code below if not 2)
+# call test() with argument "r" for an Rdsm matrix, "b" for bigmemory;
+# should print out
+#
+#      [,1] [,2] [,3] [,4] [,5] [,6]
+# [1,]    1    2    3    4    5    6
+# [2,]   11   10    9    8    7    6
+# [3,]   12   12   13   14   14   15
+# [4,]   19   18   17   17   16   15
+# [5,]   21   22   30   31   32   33
+# [6,]   39   38   37   36   35   34
+
 # argument:
-#   dm:  data matrix, an Rdsm variable; square matrix of data to be sorted
+#   dm:  data matrix, an Rdsm or bigmemory variable; square matrix of
+#      data to be sorted
 # return value:
 #   none; data is sorted in-place
 shear <- function(dm) {
    barr()
-   nr <- dm$size[1]  # number of rows in dm
+   # number of rows in dm
+   nr <- if(class(dm) == "big.matrix") dim(dm)[2] else dm$size[2]  
    myid <- myinfo$myid
    nclnt <- myinfo$nclnt
    numsteps <- ceiling(log2(nr*nr)) + 1
@@ -39,26 +53,13 @@ shear <- function(dm) {
 }
 
 # test
-testshear <- function() {
-   if (myinfo$myid == 1) {
-      newdsm("d","dsmm","integer",
-         val=matrix(c(10:19,1,3,2,7,5,4,8,6,9,12,6,15,14,22,21,17,30:39),
-            nrow=6)) 
-   }  else
-      newdsm("d","dsmm","integer",size=c(6,6)) 
+test <- function(smtype) {
+   if (smtype == "r") {
+      cnewdsm("d","dsmm","double",
+         matrix(c(10:19,1,3,2,7,5,4,8,6,9,12,6,15,14,22,21,17,30:39),nrow=6))
+   } else 
+      newbm("d","double",6,6,
+         matrix(c(10:19,1,3,2,7,5,4,8,6,9,12,6,15,14,22,21,17,30:39),nrow=6))
    shear(d)
    if(myinfo$myid == 1) print(d[,])
-   dsmexit()
 }
-
-# run with up to 6 clients (changing code below if not 2)
-
-# testshear() should print out
-#      [,1] [,2] [,3] [,4] [,5] [,6]
-# [1,]    1    2    3    4    5    6
-# [2,]   11   10    9    8    7    6
-# [3,]   12   12   13   14   14   15
-# [4,]   19   18   17   17   16   15
-# [5,]   21   22   30   31   32   33
-# [6,]   39   38   37   36   35   34
-

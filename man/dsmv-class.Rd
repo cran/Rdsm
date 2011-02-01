@@ -2,17 +2,17 @@
 \alias{dsmv-class}
 \alias{[.dsmv}
 \alias{[.dsmm}
+\alias{[.dsml}
 \alias{[<-.dsmv}
 \alias{[<-.dsmm}
-\alias{[.dsml}
-\alias{[.dsml}
+\alias{[<-.dsml}
 \title{Rdsm Classes}
 
 \description{The \code{dsmv}, \code{dsmm} and \code{dsml} classes act
 like ordinary \R vectors, matrices and lists, but have internal
 operations allowing them to be shared across \R processes.}
 
-\details{These classes are created by calling \code{newdsm}.  Indexing
+\details{These classes are created by calling \code{cnewdsm()}.  Indexing
 operations with \code{[]} work syntactically as with ordinary \R
 vectors, matrices and lists, but the generic \R functions \code{[} and
 \code{[<-} are implemented in special versions to enable the sharing.
@@ -33,7 +33,7 @@ not
 }
 
 \seealso{
-     \code{\link{newdsm}}
+     \code{\link{cnewdsm}}
 }
 
 \author{Norm Matloff}

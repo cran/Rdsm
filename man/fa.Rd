@@ -9,13 +9,17 @@ fa(fav,inc)
 }
 
 \arguments{
-\item{fav}{Fetch-and-add variable (integer vector of length 1), quoted.}
+\item{fav}{Fetch-and-add variable (\pkg{Rdsm} integer vector of 
+length 1), name quoted.} 
 \item{inc}{Increment value.}
 }
 
-\details{When a client calls \code{fa} on \code{fav}, the quantity
-\code{inc} (which could be negative) will be added to \code{fa},
-atomically.}
+\details{When a client calls \code{fa()} on \code{fav}, the quantity
+\code{inc} (which could be negative) will be added to \code{fav},
+atomically, i.e. without interference by another thread.  The actual
+addition will be performed at the server, thus reducing communications
+costs.
+}
 
 \seealso{
      \code{\link{barr}},

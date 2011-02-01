@@ -1,33 +1,89 @@
 \name{Rdsm}
-\alias{Rdsm}
+\alias{Rdsm} 
 
-\title{Distributed Threads Programming in R}
+\title{Threads Programming for R} 
 
-\description{\pkg{Rdsm} provides a threads-like programming environment
-   for \R, usable both on a multicore machine \emph{and} across a
-   network of multiple machines.  The package gives the illusion of the
-   shared memory world view that threads systems provide, again even 
-   across multiple machines on a network.
+\description{\pkg{Rdsm} provides a threads programming environment
+   for \R, not available within \R itself.  Moreover, it is
+   usable both on a multicore machine \emph{and} across a
+   network of multiple machines.  The package gives the ``look and
+   feel'' of the shared memory world view that ordinary system 
+   threads provide, again even across multiple machines on a network.
 
    The ``dsm'' in ``Rdsm'' stands for \emph{distributed shared memory},
    a term from the parallel processing community in which nodes in a
    cluster share (real or conceptual) memory.  It is based on a similar
-   package I wrote for Perl some years ago (Matloff (2002)).
+   package the author wrote for Perl some years ago (Matloff (2002)).
+
+    \pkg{Rdsm} can be used for:
+   
+      \itemize{
+
+         \item parallel computation, as with the program \file{KNN.R}
+         included with this package
+
+         \item the development of ``dashboard'' controllers and parallel
+         I/O, like the program \file{WebProbe.R}
+
+         \item the development of collaborative tools, as with the
+         program \file{Auction.R}
+
+      }
+    
+   \pkg{Rdsm} can easily be used with variables produced by Jay Emerson
+   and Mike Kane's \pkg{bigmemory} package, thus enhancing the latter
+   package by adding a threads capability.  In \pkg{bigmemory} case, if
+   the code run on a multicore machine, then the shared memory is real,
+   and the access may be considerably faster than to \pkg{Rdsm}
+   variables.  \pkg{Rdsm} provides a function \code{newbm()} for
+   creating \pkg{bigmemory} variables.
    
    }
 
 \section{Quick Introduction to \pkg{Rdsm}}{
 
-   The \pkg{Rdsm} code in \code{MatMul.r} in the examples included in
-   this package serves as as a quick introduction, using a
+   The \pkg{Rdsm} code in \file{MatMul.R} in the examples included in
+   this package serves as a quick introduction, using a
    matrix-multiply example common in parallel processing packages.
-   There are especially detailed comments in this example. 
+   There are especially detailed comments in this example, but here is
+   an overview:
+
+   The code finds the product of matrices \code{m1} and \code{m2}, placing
+   the produce in \code{prd}.  The core lines of the code are
+
+   \preformatted{
+   myid <- myinfo$myid  # this thread's ID
+   # determine number of columns of m1
+   k <- if(class(m1) == "big.matrix") dim(m1)[2] else m1$size[2] 
+   nth <- myinfo$nclnt  # number of threads
+   chunksize <- k/nth
+   # determine which columns of m1 this thread will process
+   firstcol <- 1 + (myid-1) * chunksize
+   lastcol <- firstcol + chunksize - 1
+   # process this thread's share of the columns
+   prd[,firstcol:lastcol] <- m1[,] \%*\% m2[,firstcol:lastcol]
+   }
+
+   The work is parallelized by assigning each thread a certain set of
+   columns of \code{prd}.  Each thread then computes its columns and
+   then places them in the proper section of \code{prd}.  This is a
+   classical shared-memory pattern, thus illustrating the point that
+   \pkg{Rdsm} brings threads programming to \R.  
+   
+   The matrix \code{prd} here is a shared variable, created beforehand
+   via a call to \code{cnewdsm()} in the case of an \pkg{Rdsm} variable
+   or via a call to \code{newbm()} if a \pkg{bigmemory} variable is
+   desired.
+
+   Other examples, including directions for running them, are given in
+   the \file{examples/} and \file{testscripts/} directories in this
+   package.
 
 }
 
 \section{Advantages of the Shared-Memory Paradigm}{
 
-   Whether or not the platform is a multicore machine or a set of
+   Whether the platform is a multicore machine or a set of
    networked computers, a major advantage of \pkg{Rdsm} is that it gives the
    programmer a shared-memory world view, considered by many in the
    parallel processing community to be one of the clearest forms of
@@ -38,20 +94,26 @@
    reside in processes 2 and 5, say.  The programmer would write code
    (described here in pseudocode)
 
-   \code{send x to process 5}
-   
+   \preformatted{
+      send x to process 5
+   }
+
    to run on process 2, and write code
    
-   \code{receive data item from process 2}
-
-   \code{set y to received item}
+   \preformatted{
+      receive data item from process 2
+      set y to received item
+   }
    
    to run on process 5.  By contrast, in a shared-memory environment,
    the programmer would merely write
    
-   \code{y <- x}
+   \preformatted{
+      y <- x
+   }
    
-   which is vastly simpler.
+   which is vastly simpler.  (Brackets would be required, as
+   explained below.)
    
    This also means that it is easy to convert sequential \R
    code to parallel \pkg{Rdsm} code.  
@@ -65,53 +127,36 @@
 
 }
 
-\section{Types of Applications}{
-
-   \pkg{Rdsm} should have a wide variety of applications, such as
-   
-   \itemize{
-   
-   \item Performance programming, in ``embarrassingly parallel''
-   settings (such as \file{Disc.R} in the examples included with this
-   package).
-   
-   \item Parallel I/O applications, e.g. parallel Web data collection
-   (such as \file{WebProbe.R} in the examples included with this
-   package).
-   
-   \item Collaborative tools (such as \file{Auction.R} in the examples
-   included with this package).
-   
-   }
-
-Most of these applications can also be done via non-shared memory
-paradigms, but the shared-memory paradigm makes the applications easier
-to develop, maintain and extend.
-
-}
-
 \section{Communication}{
 
-\pkg{Rdsm} runs via network sockets.  
+\pkg{Rdsm} runs via network sockets, and \pkg{Rdsm} shared variables are
+accessed via this mechanism.  If one's code also contains \pkg{bigmemory}
+shared variables, these are handled in that package's environment,
+either physical shared memory or file backing in a shared file system.
 
-Data communication is binary in the case of vectors and matrices for
-speed, but \code{serialize} and \code{unserialize} are used for lists.
+\pkg{Rdsm} data communication is binary in the case of vectors and
+matrices, but \code{serialize()} and \code{unserialize()} are used for
+lists.
 
 }
 
 \section{Launching \pkg{Rdsm}}{
 
+Start R and load \pkg{Rdsm}.
+
+\emph{Manual operation:}
+
    To run \pkg{Rdsm} manually, run \R in n+1 different terminal (shell)
    windows, where n is the desired number of clients, i.e. degree of
-   parallelism.  One of those windows will be used for the server.
+   parallelism.  Each client runs one thread.  You will use one of the
+   n+1 instances of \R for the server.
 
    Then:
    
    \itemize{
 
-      \item Run \code{srvr()} in your server window.  (Or run
-      \code{srvrinit()} and then \code{srvrloop()}; \code{srvr()}
-      is merely a convenience that calls both.)
+      \item Run \code{srvr()} in your server window, with argument n,
+      which is 2 by default.  
 
       \item In each client window, run \code{init()}.
       
@@ -121,91 +166,78 @@ speed, but \code{serialize} and \code{unserialize} are used for lists.
    }
  
    You may have several application functions to run, or may want to run
-   the same one multiple times.  This is fine as long as you don't rerun
-   \code{srvrinit()}.  You must still rerun \code{srvrloop}, but you
-   do not need to rerun \code{init} on the client side.
-   Application-program \pkg{Rdsm} variables etc. will be retained from
-   one run to the next.
+   the same one multiple times.  This is fine as long as \code{srvr()}
+   is still running; you do not need to rerun \code{init()} at the
+   clients.  Application-program \pkg{Rdsm} variables etc. will be
+   retained from one run to the next.
 
-   The script \file{AutoLaunch.R} automates the above process.  One
-   opens just one window, and the script automatically creates windows
-   for the server and clients.  Then each time the user wishes to issue
-   a command to all the clients, he/she merely types the command in the
-   original window, and it will be sent to the client windows, thus
-   saving a lot of typing.
+   \emph{Automatic launching:}
 
-   The main functions available in \file{AutoLaunch.R} are:
-   
+   If you are running on a Unix-family system (Linux, Mac OS, or Cygwin
+   on Windows), \pkg{Rdsm} launch and management can be made much more
+   convenient via \pkg{Rdsm}'s autolaunch capability.  One opens just
+   one window, and autolaunch automatically creates windows for the
+   server and clients, and then in each window starts \R and loads
+   \pkg{Rdsm} (and optionally \pkg{bigmemory}).
+
+   Then each time the user wishes to issue a command to all the clients,
+   say a command to run an \pkg{Rdsm} application, he/she merely types
+   the command in the original window, and it will be sent to the client
+   windows, thus saving a lot of typing.
+
+   Here's a quick summary example of autolaunch.  Say we wish to run two
+   threads, with our application consisting of a function \code{x()}
+   contained in the source code file \file{y.R}.  We would open a single
+   terminal window, run \R in it, and then run the following code:
+
+   \preformatted{
+       alinit(2)  # create clients
+       cmdtoclnts('source("y.R")')  # have clients source the app code
+       go()  # set up server/client connections
+       cmdtoclnts('x(3,100)')  # first run of app
+       cmdtoclnts('x(12,5000)')  # second run of app
+       ...
+   }
+
+   Here's what it does:
+
    \itemize{
 
-      \item \code{alint(nclnt=NULL,nds=NULL)}
+      \item The call to \code{alinit()} opens two other terminal
+      windows, starts \R in them, and loads the \pkg{Rdsm}
+      library.  
 
-      Call this to create the client windows, and start an \R process in
-      each one.  If \code{nds} is NULL, then this sets up \code{nclnt} 
-      windows/\R processes on \code{localhost}, i.e. the machine on
-      which the script is run.
+      \item The call to \code{cmdtoclnts()} then has the instances of \R
+      at the client windows load our application source file.
 
-      \item \code{setldir(libdir)}
+      \item The call to \code{go()} then starts \code{srvr()} in the
+      server window and \code{init()} in each client window.  
 
-      This adds \code{libdir} to the \R library search path at the
-      server and clients.
-
-      \item \code{setdir(cdir=NULL)}
-
-      This changes the working directory to \code{cdir} at each client.
-      If \code{cdir} is NULL, then the client directories are changed to
-      the current working directory of the \R process runing this
-      script.
-
-      \item \code{alinits(nclnt=NULL,nds=NULL)}
-
-      This combines \code{alinit} and \code{setdir} (with \code{cdir}
-      NULL), as a convenience.
-
-      \item \code{cmdtoclnts(cmd)}
-
-      This sends the command \code{cmd}, single-quoted, to all the
-      clients.
-
-      \item \code{loadrdsm()}
-
-      This loads \pkg{Rdsm} at the server and the clients.
-
-      \item \code{cmdtosrvr(cmd)}
-
-      This sends the command \code{cmd}, single-quoted, to the
-      server.
-
-      \item \code{cmdtoall(cmd)}
-
-      This sends the command \code{cmd}, single-quoted, to the server
-      and all the clients.
-
-      \item \code{alquit()}
-
-      This call causes the \R processes at the server and all the
-      clients to exit, and the corresponding windows to close.
+      \item We then run our application a couple of times, and of course
+      could run other \pkg{Rdsm} applications after sourcing their code.
 
    }
-   
+
 }
 
 \section{Accessing \pkg{Rdsm} Variables}{
 
    The variables in a typical \pkg{Rdsm} application program consist of
-   a few \pkg{Rdsm} variables and many ``ordinary'' variables.  Ordinary
-   \R syntax is used to access the former, just as the latter.
+   a few shared variables, produced by either \pkg{Rdsm} or
+   \pkg{bigmemory},  and many ``ordinary'' variables.  Regular \R
+   syntax is used to access the shared variables, just as with the
+   ordinary ones.
 
-   For example, suppose your \pkg{Rdsm} program includes \code{m}, a 4x5
-   matrix variable of class \code{dsmm}.  If you wished to fill the
-   second column with 1, 2, 3 and 4, you would write
+   For example, suppose your program includes \code{m}, a 4x5 shared
+   matrix variable.  If you wished to fill the second column with 1, 2,
+   3 and 4, you would write
    
    \preformatted{ m[,2] <- 1:4 }
    
    just as you would in ordinary \R.  
 
-   Note carefully that you must always use brackets with \pkg{Rdsm}
-   variables.  For instance, to copy the \pkg{Rdsm} vector \code{x} to
+   Note carefully that you must always use brackets with shared
+   variables.  For instance, to copy the shared vector \code{x} to
    an ordinary \R variable \code{y}, write
    
    \preformatted{ y <- x[] }
@@ -218,8 +250,8 @@ speed, but \code{serialize} and \code{unserialize} are used for lists.
 
 \section{Built-in Variables}{
 
-   \pkg{Rdsm}'s built-in variables are stored in a single global variable
-   \code{myinfo}, a list consisting of these components:
+   \pkg{Rdsm}'s built-in variables are stored in a single global (but
+   not shared) variable \code{myinfo}, a list consisting of these components:
    
    \itemize{
    
@@ -237,13 +269,18 @@ speed, but \code{serialize} and \code{unserialize} are used for lists.
    of threaded or other shared-memory programming systems:
    
    \itemize{
-      \item \code{barr()}: barrier operation
-      \item \code{lock()}: lock operation
-      \item \code{unlock()}: unlock operation
+      \item \code{barr()}: barrier operation, synchs all threads to the
+         same code line
+      \item \code{lock()}: lock operation, gives thread exclusive access
+         to shared variables
+      \item \code{unlock()}: unlock operation, relinquishes exclusive
+         access
       \item \code{wait()}: wait operation
-      \item \code{signal()}: signal operation
+      \item \code{signal()}: signal operation; releases all waiting
+         clients
+      \item \code{signal1()}: same as \code{signal()}, but releases only
+         the first waiting client
       \item \code{fa()}: fetch-and-add operation
-      \item \code{rpc()}: remote procedure call operation
    }
    
 }
@@ -252,61 +289,44 @@ speed, but \code{serialize} and \code{unserialize} are used for lists.
 
    \itemize{
       \item \code{init()}:  initializes a client's connection to the server
-      \item \code{srvrinit()}:  initializes the server
-      \item \code{srvrloop()}:  runs the server
-      \item \code{srvr()}:  calls both \code{srvrinit()} and \code{srvrloop()}
-      \item \code{dsmexit()}:  called when a client has finished its work
+      \item \code{srvr()}:  initializes the server
+      \item \code{dsmexit()}:  can be called when a client has finished its
+         work (note: this will stop the server when all clients make this
+         call, and thus this function should not be used in most
+         applications)
    }
 
 }
 
+\section{Shared-Variable Creation Functions}{
+
+   \itemize{
+      \item \code{cnewdsm()}:  creates an \pkg{Rdsm} variable
+      \item \code{newbm()}:  creates a \pkg{bigmemory} variable
+   }
+}
+
 \section{Internal Structure}{
 
-   Though transparent to the \pkg{Rdsm} programmer, internally \pkg{Rdsm} has the
-   following architecture.
+   Though transparent to the \pkg{Rdsm} programmer, internally
+   \pkg{Rdsm} variables (but not \pkg{bigmemory} ones) have
+   the following architecture.
 
    The \pkg{Rdsm} application variables reside on the server.  Each read from
    or write to an \pkg{Rdsm} variable involves a transaction with the server.
-
    \pkg{Rdsm} variables reference vectors, matrices and lists, but have
    the special \pkg{Rdsm} classes \code{dsmv}, \code{dsmm} and
    \code{dsml}, respectively.  Indexing operations for these classes
    communicate with the server to read or write the desired objects.
+
+   See the \pkg{bigmemory} package for details of the structure used for
+   those variables.  These are of the matrix type only, class
+   \code{big.matrix}.  Of course, a vector can be represented as a
+   one-row vector.
    
-   Again, all this is transparent to the \pkg{Rdsm} programmer.
-   However, as with any system, a good understanding of the internals
-   can result in your writing much better code.
-
-}
-
-\section{High-Performance Computing}{
-
-   \pkg{Rdsm} can do quite well in \emph{embarrassingly parallel}
-   applications, meaning those in which the task at hand can easily be
-   broken in smaller independent tasks to be done by the processes.  An
-   additional requirement is that the ``output,'' i.e. \pkg{Rdsm} variables
-   used to contain results of the large task, not be voluminous or
-   frequently written.
-
-   It should be noted that this is not just an issue with \pkg{Rdsm}.  Indeed,
-   the functional programming nature of \R, in which writing to just one
-   element of a vector or array means rewriting the entire data object,
-   essentially rules out good performance in non-embarrassingly parallel
-   problems.  On multicore/multiprocessor systems, I recommend
-   interfacing \R with C/C++ in OpenMP, with OpenMP doing the parallel
-   portion of your work.
-
-}
-
-\section{Relation to \pkg{bigmemory}}{
-
-The other \R package providing a shared-memory paradigm (read/write) is
-\pkg{bigmemory}.  That package is restricted to multicore platforms,
-while \pkg{Rdsm} is much more general, usable on sets of separate but
-networked machines.  \pkg{Rdsm} also offers vector and list types in
-addition to matrices, while \pkg{bigmemory} has only matrices.  On the
-other hand, on multicore platforms, \pkg{bigmemory} may be faster for
-some applications.
+   Again, all this is transparent to the programmer.  However, as with
+   any system, a good understanding of the internals can result in your
+   writing much better code.
 
 }
 

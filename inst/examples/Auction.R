@@ -4,6 +4,9 @@
 # fancier versions could be constructed, e.g. with a graphical display,
 # bidder names, etc.
 
+# test by calling auction(); best with at least 3 bidders, i.e. at least
+# 6 clients; run for a while, then have bidders withdraw
+
 # author:  N. Matloff
 
 # arguments:  none
@@ -13,13 +16,8 @@
 auction <- function() {
    if (myinfo$nclnt %% 2 != 0)
       stop("need even number of clients")
-   if(myinfo$myid == 1) {
-      newdsm("latestbid","dsmv","integer",val=0)
-      newdsm("nbidders","dsmv","integer",val=myinfo$nclnt/2)
-   } else {
-      newdsm("latestbid","dsmv","integer",size=1)
-      newdsm("nbidders","dsmv","integer",size=1)
-   }
+   cnewdsm("latestbid","dsmv","integer",0)
+   cnewdsm("nbidders","dsmv","integer",myinfo$nclnt/2)
    barr()
    if (myinfo$myid%%2 == 1) {  # monitor bid
       print("no bids yet")
@@ -65,7 +63,3 @@ auction <- function() {
       }
    }
 }
-
-# test by calling auction() at each client; best with at least 3
-# clients; make sure that ncon is specified in srvr() to the number of
-# clients

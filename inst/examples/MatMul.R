@@ -1,98 +1,31 @@
-# Rdsm tutorial: MatMult1.R, matrix multiplication code
+# Rdsm tutorial: MatMult.R, simple matrix multiplication code
 
 # authors: Y. Hui, N. Matloff
 
 # ********************************************************************
-#
-#                           READ THIS FIRST
+# ********************************************************************
+# ********************************************************************
+# ********************************************************************
+# ********************      READ THIS FIRST     **********************
 #
 # the purpose of this program is educate the Rdsm novice on the basic
 # writing and execution of Rdsm code; it has extensive comments designed
 # with that goal in mind; there is also additional output for that
-# purpose; instructions for running the code are given in the README
-# file in this directory
+# purpose
 #
 # ********************************************************************
 
-# the function matmult1() takes in two matrices and computes their product
+# ********************************************************************
+# ********************************************************************
+# ********************      TEST RUN     *****************************
 #
-# arguments:
-#   m1:  left matrix, an Rdsm matrix variable
-#   m2:  right matrix, an Rdsm matrix variable
-#   prd:  product, an Rdsm matrix variable
+# instructions for starting Rdsm are given in the README
+# file in this directory
 #
-# return value:  none; product is stored in prd 
-
-# for simplicity, assume here that the number of columns in m1 is a
-# multiple of the number of clients
-matmul1 <- function(m1, m2, prd) {
-   # myinfo is a variable built-in to Rdsm; it includes the client's ID
-   myid <- myinfo$myid
-   # barr(), a barrier function, a workhorse of shared-memory
-   # programming, ensures that the clients are "all on the same page,"
-   # meaning on the same line of code; when this function is called by a
-   # client; it hangs until all other clients call the function
-   message(myid," reaches the barrier")
-   barr()
-   # m1, m2 and prd are Rsdm matrices, i.e. of class dsmm; one member
-   # variable in that class is size, a 2-tuple giving the dimensions of
-   # the matrix
-   k <- m1$size[2]  # number of columns of m1
-   # determine how many columns of m1 will be done by each client; one
-   # of the components of myinfo is nclnt, the total number of clients
-   chunksize <- k/myinfo$nclnt
-   # determine which columns this client will process
-   firstcol <- 1 + (myid-1) * chunksize
-   lastcol <- firstcol + chunksize - 1
-   message("\n",myid," will handle columns ",
-      paste(firstcol:lastcol,collapse=" "))
-   # process this client's share of the columns
-   prd[,firstcol:lastcol] <- m1[,] %*% m2[,firstcol:lastcol]
-   barr()
-}
-
-# function to test matmul1
-test1 <- function() {
-# first create the matrices 
-# we use newdsm() to create Rdsm variables; here we create one named
-# ma, of mode integer, with initial value as given, and then create mb
-# and mc; one client, say client 1, specifies the value, which goes to
-# the server, while the other clients keep only local information, i.e.
-# the size; the latter is a 2-tuple for a matrix, and a scalar for a
-# vector
-   m <- matrix(1:36,nrow=6)
-   if (myinfo$myid == 1) {
-      newdsm("ma","dsmm","integer",val=m)
-      newdsm("mb","dsmm","integer",val=m)
-      newdsm("mc","dsmm","integer",val=matrix(nrow=6,ncol=6))
-   } else {
-      newdsm("ma","dsmm","integer",size=c(6,6))
-      newdsm("mb","dsmm","integer",size=c(6,6))
-      newdsm("mc","dsmm","integer",size=c(6,6))
-   }
-   # call the multiplication code; note again that all Rdsm variables are
-   # global, and mc here will be changed
-   matmul1(ma,mb,mc)
-   # print result 
-   if (myinfo$myid == 1) print(mc[,])
-   # dsmexit() is used to disconnect the clients from the server
-   dsmexit()
-}
-
-# to be run after test1()
-test2 <- function() {
-# the size; the latter is a 2-tuple for a matrix, and a scalar for a
-# vector
-   matmul1(ma,mc,mb)
-   # print result 
-   if (myinfo$myid == 1) print(mb[,])
-   # dsmexit() is used to disconnect the clients from the server
-   dsmexit()
-}
-
-# run with 2 or 3 clients 
-
-# test1() should print out 
+# run test("r") (Rdsm matrix) or test("b") (bigmemory matrix) with 2 or
+# 3 clients
+#
+# should print out 
 #      [,1] [,2] [,3] [,4] [,5] [,6]
 # [1,]  441 1017 1593 2169 2745 3321
 # [2,]  462 1074 1686 2298 2910 3522
@@ -100,13 +33,64 @@ test2 <- function() {
 # [4,]  504 1188 1872 2556 3240 3924
 # [5,]  525 1245 1965 2685 3405 4125
 # [6,]  546 1302 2058 2814 3570 4326
+# 
+# ********************************************************************
+# ********************************************************************
 
-# test2() should print out 
-#       [,1]   [,2]   [,3]   [,4]   [,5]   [,6]
-# [1,] 49581 117297 185013 252729 320445 388161
-# [2,] 52542 124254 195966 267678 339390 411102
-# [3,] 55503 131211 206919 282627 358335 434043
-# [4,] 58464 138168 217872 297576 377280 456984
-# [5,] 61425 145125 228825 312525 396225 479925
-# [6,] 64386 152082 239778 327474 415170 502866
+# the function matmul() takes in two matrices and computes their product
+#
+# arguments, all Rdsm or bigmemory variables:
+#   m1:  left matrix, 
+#   m2:  right matrix
+#   prd:  product
+#
+# return value:  none; product is stored in prd
 
+# for simplicity, assume here that the number of columns in m1 is a
+# multiple of the number of clients
+matmul <- function(m1, m2, prd) {
+   # myinfo is a variable built-in to Rdsm; it includes the client's ID
+   myid <- myinfo$myid
+   # we need to know the number of columns of m1; easier to query for
+   # bigmemory case
+   k <- if(class(m1) == "big.matrix") dim(m1)[2] else m1$size[2]  
+   # determine how many columns of prd will be done by each client; one
+   # of the components of myinfo is nclnt, the total number of clients
+   chunksize <- k/myinfo$nclnt
+   firstcol <- 1 + (myid-1) * chunksize
+   lastcol <- firstcol + chunksize - 1
+   # process this client's share of the columns: multiply them times m2,
+   # and place the result in the proper part of prd
+   prd[,firstcol:lastcol] <- m1[,] %*% m2[,firstcol:lastcol]
+   # barr(), a barrier function, a workhorse of shared-memory
+   # programming, ensures that the clients are "all on the same page,"
+   # meaning on the same line of code; when this function is called by a
+   # client; it hangs until all other clients call the function, so that
+   # we won't leave until the entire prd computation is done
+   barr()
+}
+
+# function to test matmul()
+test <- function(smtype) {
+   # first create the matrices, of Rdsm or bigmemory type, as requested via
+   # smtype ("r" or "b")
+   m <- matrix(1:36,nrow=6)
+   if (smtype == "r") {
+      # create an Rdsm matrix (class "dsmm") named "ma", double mode, 
+      # initial value m
+      cnewdsm("ma",thisclass="dsmm",thismode="double",val=m)
+      cnewdsm("mb","dsmm","double",m)
+      cnewdsm("mc","dsmm","double",val=matrix(rep(0,36),nrow=6))
+   } else {
+       # create a bigmemory matrix "ma", double mode, 6x6, initial
+       # value m
+       newbm("ma","double",6,6,m)
+       newbm("mb","double",6,6,m)
+       newbm("mc","double",6,6,m)
+   }
+   # call the multiplication code; note again that all the arguments are
+   # global, and mc here will be changed
+   matmul(ma,mb,mc)
+   # print result if we are thread 1
+   if (myinfo$myid == 1) print(mc[,])
+}
