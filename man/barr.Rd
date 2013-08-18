@@ -1,29 +1,32 @@
 \name{barr}
 \alias{barr}
-\title{barr}
 
-\description{Classical shared-memory barrier function.  
+\title{
+Barrier operation.
+}
+
+\description{
+Standard barrier operation.
 }
 
 \usage{
 barr()
 }
 
-\arguments{
-None.
+% \arguments{
+% }
+
+\details{
+Standard barrier operation, to ensure that work done by one thread is 
+ready before other threads make use of it.  When a thread executes 
+\code{barr()}, it will block until all threads have executed it.
 }
 
-\details{Call will block at the caller until all clients have made the call.  
-Use to synchronize multiple threads at the same line of code.
+% \value{
+% }
+
+\author{
+Norm Matloff
 }
 
-\seealso{
-    \code{\link{lock}},
-    \code{\link{unlock}},
-    \code{\link{wait}},
-    \code{\link{signal}},
-    \code{\link{fa}}
-}
-
-\author{Norm Matloff}
-
+% \keyword{models}

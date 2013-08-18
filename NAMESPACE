@@ -1,6 +1,7 @@
 
-export(alinit,barr,closecon,cmdtoclnts,cmdtosrvr,cmdtoall,cnewdsm,
-   dsmexit,fa,go,init,loadrdsm,lock,newbm,newdsm,signal,signal1,
-   srvrinit,srvrloop,srvr,unlock,wait,
-   "[.dsmv","[<-.dsmv","[.dsmm","[<-.dsmm","[<-.dsmm",
-   "[.dsml","[<-.dsml")
+import(parallel,bigmemory)
+
+export(mgrinit,mgrmakevar,mgrmakelock,
+   rdsmlock,rdsmunlock,
+   getidxs,makebarr,barr,shmcls) 
+ 

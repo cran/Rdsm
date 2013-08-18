@@ -1,9 +1,13 @@
 
-See examples/README for quick start.
+Threads programming for R!  It enables the clearer, simpler
+shared-memory programming style, and in some cases gives superior
+performance.
 
-Type
+For a quick introduction, do
 
-   help(package=Rdsm)
+> library(Rdsm)
+> ?rdsm
 
-for details.  (Rdsm must be installed first, of course.)
+Note:  Every effort has been made to ensure the correctness
+of this code, but no warranty of any kind is given.
 
