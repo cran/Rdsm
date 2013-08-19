@@ -1,4 +1,4 @@
-941f3d776db42c86f1bce6707dab0cf1 *DESCRIPTION
+cce2bdd1542590639f063617dfb4746f *DESCRIPTION
 1c8299f8d0a3a2a5983101bd2b5297e7 *NAMESPACE
 de193d1cc651e7a46deb907774433280 *R/Rdsm.R
 6d38af89ca69036511bba90d6d095518 *inst/README
@@ -10,7 +10,7 @@ c097adc8d3bf8616fdab16aea0de6343 *inst/examples/BSort.R
 29aa824258aafe081861a063f573ca7c *inst/examples/KMeans.R
 01e9fc2da8318695c12ef0d7d10c8a30 *inst/examples/MMul.R
 8a969215dcad436fc5de4bd118469925 *inst/examples/PDist.R
-96aa5017a923c20c7db040ea944af34e *man/Rdsm-package.Rd
+b3352225da3cded2a46567a14dd38f26 *man/Rdsm-package.Rd
 48854920bb3f9ef8f15c8ab7d2bce03d *man/barr.Rd
 1fe7f55f6e6aa4726e0229ee87895ee9 *man/getidxs.Rd
 7f17c921007acd16e998092de749b06d *man/makebarr.Rd

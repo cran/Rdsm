@@ -23,8 +23,8 @@ written for other parallel R libraries.
 \tabular{ll}{
 Package: \tab Rdsm\cr
 Type: \tab Package\cr
-Version: \tab 2.0\cr
-Date: \tab 2013-08-18\cr
+Version: \tab 2.0.2\cr
+Date: \tab 2013-08-19\cr
 License: \tab GPL (>= 2)\cr
 }
 
