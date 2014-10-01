@@ -46,12 +46,12 @@ bsort <- function(x,counts,samp,nsamp=1000) {
    }
 }
 
-test <- function(cls,back=F) {
+test <- function(cls,barrback=F) {
    require(parallel)
-   mgrinit(cls)
-   mgrmakevar(cls,"a",1,25)
-   mgrmakevar(cls,"counts",1,length(cls))
-   mgrmakevar(cls,"smp",1,10)
+   mgrinit(cls,barrback=barrback)
+   mgrmakevar(cls,"a",1,25,fs=barrback)
+   mgrmakevar(cls,"counts",1,length(cls),fs=barrback)
+   mgrmakevar(cls,"smp",1,10,fs=barrback)
    a[1,] <- runif(25)
    print(a[1,])
    clusterExport(cls,"bsort")

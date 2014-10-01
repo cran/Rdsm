@@ -6,8 +6,8 @@ Parallelizing work assignment.
 }
 
 \description{
-Breaks a range of values into r vectors, where r is the number of
-threads, for the purpose of partitioning work to the threads.
+Assigns to an \pkg{Rdsm} thread its portion of a set of indices,
+for the purpose of partitioning work to the threads.
 }
 
 \usage{
@@ -16,7 +16,8 @@ getidxs(m)
 
 \arguments{
   \item{m}{
-  The sequence 1:m will be partitioned.
+  The sequence 1:m will be partitioned, and one portion will be assigned
+  to the calling thread.
   }
 }
 

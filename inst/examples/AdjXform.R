@@ -26,7 +26,8 @@
 #   [9,]    3    3
 #  [10,]    3    6
 #  
-#  etc.
+#  etc.; row 6 of the output, for instance, means there was a 1 at row
+#  2, column 4 of the input matrix
 
 # arguments:
 #    a:  adjacency matrix 
@@ -34,15 +35,26 @@
 #    counts:  numbers of edges found by each thread; shared
 
 # in this version, the matrix lnks must be created ahead of time; since
-# the number of rows is uknown a priori, one must allow for the worst
+# the number of rows is unknown a priori, one must allow for the worst
 # case, nrow(a)^2 rows; after the run, the number of actual rows will be
 # in counts[1,length(cls)]
 
+# code to be run by a thread; a, lnks, counts can be specified in any
+# form--bigmatrix object, bigmatrix decriptor, quoted bigmatrix
+# name--resolved by getmatrix()
 getlinks <- function(a,lnks,counts) {
    require(parallel)
+   require(Rdsm)
+   a <- getmatrix(a)
+   lnks <- getmatrix(lnks)
+   counts <- getmatrix(counts)
    nr <- nrow(a)
    # get my assigned portion of a
    myidxs <- getidxs(nr)
+   # determine where the 1s are in this thread's portion of adj; for
+   # each row number i in myidxs, an element of myout will record the 
+   # column locations of the 1s in that row, i.e. record the edges
+   # out of vertex i
    myout <- apply(a[myidxs,],1,function(rw) which(rw==1))
    # myout[[i]] now lists the edges from node myidxs[1] + i - 1
    nmyedges <- Reduce(sum,lapply(myout,length))  # my total edges
@@ -70,16 +82,20 @@ getlinks <- function(a,lnks,counts) {
    invisible(0)  # don't do expensive return of result
 }
 
-test <- function(cls) {
+glinks <- function(aname,lnksname,countsname,cls) {
    require(parallel)
+   clusterCall(cls,getlinks,"x","lnks","counts") 
+}
+
+test <- function(cls) {
+   require(Rdsm)
    mgrinit(cls)
    mgrmakevar(cls,"x",8,8)
    mgrmakevar(cls,"lnks",64,2)
    mgrmakevar(cls,"counts",1,length(cls))
-   x[,] <- matrix(sample(0:1,64,replace=T),ncol=8)
+   x[,] <- matrix(sample(0:1,64,replace=TRUE),ncol=8)
    print(x[,])
-   clusterExport(cls,"getlinks")
-   clusterEvalQ(cls,getlinks(x,lnks,counts))
+   glinks("x","lnks","counts",cls)
    nout <- counts[1,length(cls)]
    print(lnks[1:nout,])
 }

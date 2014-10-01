@@ -10,12 +10,12 @@ Creates an \pkg{Rdsm} shared variable.
 }
 
 \usage{
-mgrmakevar(cls,varname,nr,nc,vartype="double",back=F,mgrcpy=T)
+mgrmakevar(cls,varname,nr,nc,vartype="double",fs=FALSE,mgrcpy=TRUE,savedesc=TRUE)
 }
 
 \arguments{
   \item{cls}{
-  The \pkg{snow} cluster.
+  The \pkg{parallel} cluster.
   }
   \item{varname}{
   Name of the shared variable, quoted.  (The variable must
@@ -30,11 +30,14 @@ mgrmakevar(cls,varname,nr,nc,vartype="double",back=F,mgrcpy=T)
   \item{vartype}{
   Atomic R type of the variable, quoted, "double" by default.
   }
-  \item{back}{
-  Place in backing store?  False by default.
+  \item{fs}{
+  Place in backing store?  FALSE by default.
   }
   \item{mgrcpy}{
-  Place a copy of the shared variable on the manager node?  True by default.
+  Place a copy of the shared variable on the manager node?  TRUE by default.
+  }
+  \item{savedesc}{
+  Save the \pkg{bigmemory} descriptor for this variable on disk.
   }
 }
 

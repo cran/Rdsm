@@ -10,7 +10,7 @@ Creates an \pkg{Rdsm} barrier.
 }
 
 \usage{
-makebarr(cls,boost=F,back=F)
+makebarr(cls,boost=F,barrback=F)
 }
 
 \arguments{
@@ -20,8 +20,8 @@ makebarr(cls,boost=F,back=F)
   \item{boost}{
   Locks type.  See \code{mgrinit}.
   }
-  \item{back}{
-  If True, the count/sense variables related to the barrier will be
+  \item{barrback}{
+  If TRUE, the count/sense variables related to the barrier will be
   placed in backing store.
   }
 }

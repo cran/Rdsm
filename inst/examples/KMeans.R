@@ -84,7 +84,7 @@ test <- function(cls,boost=F) {
    mgrmakevar(cls,"cntrds",2,2)
    mgrmakevar(cls,"sms",2,3)
    mgrmakelock(cls,"lck",boost)
-   x[,] <- matrix(sample(1:100,24,replace=T),ncol=2)
+   x[,] <- matrix(sample(1:100,24,replace=TRUE),ncol=2)
    clusterExport(cls,"kmeans")
    # clusterEvalQ(cls,debug(kmeans))
    if (boost) {
@@ -99,17 +99,17 @@ test <- function(cls,boost=F) {
 
 test1 <- function(cls) {
    require(parallel)
-   mgrinit(cls)
+   mgrinit(cls,boost=TRUE,barrback=TRUE)
    mgrmakevar(cls,"x",10000,3)
    mgrmakevar(cls,"cntrds",3,3)
    mgrmakevar(cls,"sms",3,4)
-   mgrmakelock(cls,"lck")
+   mgrmakelock(cls,"lck",boost=TRUE)
    x[,] <- matrix(rnorm(30000),ncol=3)
    ri <- sample(1:10000,3000)
    x[ri,1] <- x[ri,1] + 5
    ri <- sample(1:10000,3000)
    x[ri,2] <- x[ri,2] + 5
    clusterExport(cls,"kmeans")
-   clusterEvalQ(cls,kmeans(x,3,50,cntrds,sms,"lck"))
+   clusterEvalQ(cls,kmeans(x,3,50,cntrds,sms,lck))
    print(cntrds[,])
 }

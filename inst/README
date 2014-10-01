@@ -6,7 +6,7 @@ performance.
 For a quick introduction, do
 
 > library(Rdsm)
-> ?rdsm
+> ?Rdsm
 
 Note:  Every effort has been made to ensure the correctness
 of this code, but no warranty of any kind is given.

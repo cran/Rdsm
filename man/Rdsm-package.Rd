@@ -10,12 +10,12 @@ Adds a threaded parallel programming paradigm to R.
 \description{
 
 This package provides a parallel shared-memory programming paradigm for
-R, very similar to threaded programming in C/C++, This enabling the
-programmer to write simpler, clearer code.  Even more importantly, it
-allows placing very large matrices in secondary storage, while treating
-them as being in shared memory.  Furthermore, in some applications this
-package produces significantly faster code, compared to versions
-written for other parallel R libraries.
+R, very similar to threaded programming in C/C++. This enables the
+programmer to write simpler, clearer code.  Furthermore, in some
+applications this package produces significantly faster code, compared
+to versions written for other parallel R libraries.  It also allows
+placing very large matrices in secondary storage, while treating them as
+being in shared memory.  
 
 }
 
@@ -23,8 +23,8 @@ written for other parallel R libraries.
 \tabular{ll}{
 Package: \tab Rdsm\cr
 Type: \tab Package\cr
-Version: \tab 2.0.2\cr
-Date: \tab 2013-08-19\cr
+Version: \tab 2.1.1\cr
+Date: \tab 2014-02-16\cr
 License: \tab GPL (>= 2)\cr
 }
 
@@ -36,8 +36,7 @@ List of functions:
       mgrinit():  initialize system
       mgrmakevar():  create a shared variable 
       mgrmakelock():  create a lock
-      mgrmakebarr():  create a barrier
-      shmcls():  create a Snow cluster
+      makebarr():  create a barrier
 
    called by applications:  
 
@@ -48,9 +47,13 @@ List of functions:
    application utilities:  
 
       getidxs():  partition a set of indices for work assignment
+      getmatrix():  allow a matrix to be referenced regardless of 
+                    whether it is specified as a bigmemory object, 
+                    a bigmemory descriptor, or via a quoted name
+      stoprdsm()  shut down cluster and clean up files          
    }
 
-Built-in variables in the threads, at the worker nodes:
+Built-in variables accessible by the threads, at the worker nodes:
 
    \preformatted{
    myinfo$nwrkrs:  total number of threads
@@ -58,16 +61,20 @@ Built-in variables in the threads, at the worker nodes:
    }
 
 
-To run, set up a \pkg{snow} cluste (via the \pkg{parallel} package)r;
-we'll refer to the R process from which this is done as the manager.
-Create the application's shared variables from the manager, using
-\code{mgrmakevar()}.  Launch the threads, again from the manager, by the
-\pkg{snow} call \code{clusterEvalQ()}.  One typically codes so that the
-results are in shared variables.  See examples below, and more in the
-\code{examples/} directory in this distribution.
+To run, set up a cluster via the \pkg{parallel} package); we'll refer to
+the R process from which this is done as the manager; the processes
+running in the cluster will be called workers.  Create the application's
+shared variables from the manager, using \code{mgrmakevar()}.  Launch
+the worker threads, again from the manager, by the \pkg{parallel} call
+\code{clusterEvalQ()} or \code{clusterCall()}.  One typically codes so
+that the results are in shared variables.  See examples below, and more
+in the \code{examples/} directory in this distribution.
 
-While an \pkg{Rdsm} application is running, other R processes can access
-the shared variables.  See the file ExternalAccess.txt in the doc/
+The shared variables are read to/written by any of the workers and the
+manager.  In fact, while an \pkg{Rdsm} application is running, other R
+processes on the same machine (or a different machine sharing the same
+file system, if the variables are filebacked) can access the shared
+variables.  See the file \code{ExternalAccess.txt} in the \code{doc/}
 directory.
 
 \pkg{Rdsm} uses the \pkg{bigmemory} library to store its shared
@@ -75,7 +82,7 @@ variables.  Though the latter can work on a (physical) cluster of
 several machines sharing a file system, \pkg{Rdsm} does not run on such
 systems at this time.
 
-Further documentation in the doc/ directory.
+Further documentation in the \code{doc/} directory.
 
 }
 
@@ -95,12 +102,14 @@ threads
    \code{\link{mgrmakelock}},
    \code{\link{barr}},
    \code{\link{rdsmlock}},
-   \code{\link{rdsmunlock}}
+   \code{\link{rdsmunlock}},
+   \code{\link{getidxs}},
+   \code{\link{getmatrix}}
 }
 
 \examples{
 library(parallel)
-c2 <- shmcls(2)  # form 2-thread Snow cluster
+c2 <- makeCluster(2)  # form 2-thread Snow cluster
 mgrinit(c2)  # initialize Rdsm
 mgrmakevar(c2,"m",2,2)  # make a 2x2 shared matrix
 m[,] <- 3  # 2x2 matrix of all 3s

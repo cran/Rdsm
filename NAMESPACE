@@ -1,7 +1,8 @@
 
 import(parallel,bigmemory)
 
-export(mgrinit,mgrmakevar,mgrmakelock,
+export(mgrinit,mgrmakevar,mgrmakelock,makebarr,barr,
    rdsmlock,rdsmunlock,
-   getidxs,makebarr,barr,shmcls) 
+   getidxs,getmatrix,stoprdsm,
+   readsync,writesync,loadex)
  

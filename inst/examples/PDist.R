@@ -3,13 +3,8 @@
 # rows in the matrix y, as with pdist() but in parallel
 
 # arguments:
-#    cls:  cluster
-#    x:  data matrix 
-#    y:  data matrix 
-#    dyn:  True means dynamic scheduling
-#    chunk:  chunk size 
-# return value:
-#    full distance matrix
+#    x,y: input matrices
+#    dout:  output matrix, shared
 
 rdsmpdist <- function(x,y,dout) {
    require(pdist)
