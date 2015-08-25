@@ -9,7 +9,6 @@ Description: Provides a threads-type programming environment for R.
    shared memory world view, and in some cases gives superior
    performance as well.  In addition, it enables parallel processing on
    very large, out-of-core matrices.  
-OS_type: unix
 Imports: bigmemory (>= 4.0.0), parallel
 Suggests: synchronicity
 LazyLoad: no
